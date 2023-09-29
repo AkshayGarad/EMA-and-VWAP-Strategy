@@ -1,0 +1,35 @@
+//@version=4
+strategy("EMA and VWAP Strategy", shorttitle="EMA-VWAP Strategy", overlay=true)
+
+// Input parameters
+fast_length = input(50, title="Fast EMA Length")
+slow_length = input(100, title="Slow EMA Length")
+vwap_length = input(14, title="VWAP Length")
+
+// Calculate EMA values
+ema_fast = ema(close, fast_length)
+ema_slow = ema(close, slow_length)
+
+// Calculate VWAP
+vwap = sma(hlc3, vwap_length)
+
+// Entry conditions
+buy_condition = crossover(ema_fast, ema_slow)
+sell_condition = crossunder(ema_fast, ema_slow)
+
+// Track long and short positions
+var float long_stop_price = na
+var float short_stop_price = na
+long_stop_price := na(long_stop_price[1]) ? vwap : max(vwap, long_stop_price[1])
+short_stop_price := na(short_stop_price[1]) ? vwap : min(vwap, short_stop_price[1])
+
+// Exit conditions
+exit_long_condition = close < vwap
+exit_short_condition = close > vwap
+
+// Strategy logic
+strategy.entry("Buy", strategy.long, when = buy_condition)
+strategy.entry("Sell", strategy.short, when = sell_condition)
+
+strategy.exit("ExitLong", from_entry = "Buy", when = exit_long_condition or sell_condition)
+strategy.exit("ExitShort", from_entry = "Sell", when = exit_short_condition or buy_condition)
