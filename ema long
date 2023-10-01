@@ -1,0 +1,31 @@
+//@version=4
+strategy("S EMA Cross L EMA Strategy (Long Only)", shorttitle="EMA Crossover", overlay=true)
+
+// Define the EMA lengths
+ema_small_length = 9
+ema_larg_length = 13
+
+// Calculate the EMAs
+ema_small = ema(close, ema_small_length)
+ema_larg = ema(close, ema_larg_length)
+
+// Plot the EMAs on the chart
+plot(ema_small, color=color.blue, title="Small EMA")
+plot(ema_larg, color=color.red, title="Larg EMA")
+
+// Define the conditions for buying (long) and selling
+buy_condition = crossover(ema_small, ema_larg)
+
+// Plot buy signals on the chart
+plotshape(series=buy_condition, title="Buy Signal", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small)
+
+// Define the trailing stop and stop loss values
+sl_value = 10
+trail_value = sl_value  // 0.10 or 10 ticks
+stop_loss_value = sl_value  // 0.10 or 10 ticks
+
+// Strategy orders for long positions only
+strategy.entry("Buy", strategy.long, when=buy_condition)
+
+// Add trailing stop for long positions
+strategy.exit("Trailing Stop", from_entry="Buy", trail_offset=trail_value, trail_price=trail_value, stop=stop_loss_value)
